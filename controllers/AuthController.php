@@ -1,49 +1,42 @@
 <?php
-// controllers/AuthController.php
+
 namespace Controllers;
+use MVC\Router;
 use Model\Usuario;
 use Model\Auditoria;
-use MVC\Router;
-use Model\ActiveRecord[];
-
 
 class AuthController {
     
-    public static function login() {
-        $router = new Router();
-        
+    public static function index(Router $router) {
         if($_SERVER['REQUEST_METHOD'] === 'POST') {
             $auth = new AuthController();
-            $auth->procesarLogin();
+            $auth->procesarLogin($router);
         }
         
-        $router->render('auth/login', [], 'auth');
+        $router->render('auth/index', [], 'login');
     }
     
-    public function procesarLogin() {
+    public function procesarLogin(Router $router) {
         $errores = [];
         
         $codigo = $_POST['codigo'] ?? '';
         $password = $_POST['password'] ?? '';
         
-        if(!$codigo) {
-            $errores[] = 'El código de usuario es obligatorio';
-        }
-        
-        if(!$password) {
-            $errores[] = 'La contraseña es obligatoria';
-        }
+        if(!$codigo) $errores[] = 'El código de usuario es obligatorio';
+        if(!$password) $errores[] = 'La contraseña es obligatoria';
         
         if(empty($errores)) {
-            $usuario = Usuario::where('usu_codigo', $codigo);
+            // Buscar usuario por código
+            $usuarios = Usuario::where('usu_codigo', $codigo);
+            $usuario = !empty($usuarios) ? $usuarios[0] : null;
             
             if($usuario && password_verify($password, $usuario->usu_password) && $usuario->usu_situacion == 1) {
                 session_start();
                 $_SESSION['usuario_id'] = $usuario->usu_id;
                 $_SESSION['usuario_nombre'] = $usuario->usu_nombre;
+                $_SESSION['usuario_fotografia'] = $usuario->usu_fotografia;
                 $_SESSION['login'] = true;
                 
-                // Registrar auditoría
                 $auditoria = new Auditoria([
                     'usu_id' => $usuario->usu_id,
                     'aud_modulo' => 'Autenticación',
@@ -60,8 +53,7 @@ class AuthController {
             }
         }
         
-        $router = new Router();
-        $router->render('auth/login', ['errores' => $errores], 'auth');
+        $router->render('auth/index', ['errores' => $errores], 'login');
     }
     
     public static function logout() {
