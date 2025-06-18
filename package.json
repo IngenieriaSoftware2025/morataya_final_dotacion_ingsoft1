@@ -1,7 +1,7 @@
 {
-  "name": "demo-app",
+  "name": "app_dotacion",
   "version": "1.0.0",
-  "description": "Aplicacion MVC demo",
+  "description": "Aplicacion MVC de app_dotacion",
   "main": "index.js",
   "scripts": {
     "build": "webpack",
