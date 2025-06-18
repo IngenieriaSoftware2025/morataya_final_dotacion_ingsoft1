@@ -56,7 +56,6 @@
                     <div class="mb-3">
                         <label class="form-label">Roles</label>
                         <div id="RolesContainer">
-                            <!-- Se cargan dinámicamente -->
                         </div>
                     </div>
                 </div>

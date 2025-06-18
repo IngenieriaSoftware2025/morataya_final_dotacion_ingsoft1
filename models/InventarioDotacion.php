@@ -6,6 +6,7 @@ class InventarioDotacion extends ActiveRecord {
     
     public static $tabla = 'morataya_inventario_dotacion';
     public static $columnasDB = [
+        'inv_id',
         'tipo_id',
         'talla_id',
         'cantidad',
@@ -14,6 +15,7 @@ class InventarioDotacion extends ActiveRecord {
     ];
     
     public static $idTabla = 'inv_id';
+    
     public $inv_id;
     public $tipo_id;
     public $talla_id;

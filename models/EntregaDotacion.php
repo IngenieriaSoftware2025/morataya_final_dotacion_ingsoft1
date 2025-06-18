@@ -6,6 +6,7 @@ class EntregaDotacion extends ActiveRecord {
     
     public static $tabla = 'morataya_entregas_dotacion';
     public static $columnasDB = [
+        'entrega_id',
         'solicitud_id',
         'usuario_id',
         'fecha_entrega',
@@ -13,6 +14,7 @@ class EntregaDotacion extends ActiveRecord {
     ];
     
     public static $idTabla = 'entrega_id';
+    
     public $entrega_id;
     public $solicitud_id;
     public $usuario_id;

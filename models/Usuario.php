@@ -6,6 +6,7 @@ class Usuario extends ActiveRecord {
     
     public static $tabla = 'morataya_usuario';
     public static $columnasDB = [
+        'usu_id',
         'usu_nombre',
         'usu_codigo',
         'usu_password',
@@ -15,6 +16,7 @@ class Usuario extends ActiveRecord {
     ];
     
     public static $idTabla = 'usu_id';
+    
     public $usu_id;
     public $usu_nombre;
     public $usu_codigo;
@@ -31,5 +33,15 @@ class Usuario extends ActiveRecord {
         $this->usu_correo = $args['usu_correo'] ?? '';
         $this->usu_fotografia = $args['usu_fotografia'] ?? '';
         $this->usu_situacion = $args['usu_situacion'] ?? 1;
+    }
+    
+    public static function buscarPorCodigo($codigo) {
+        $query = "SELECT * FROM " . static::$tabla . " WHERE usu_codigo = " . self::$db->quote($codigo) . " AND usu_situacion = 1";
+        $resultado = self::consultarSQL($query);
+        return !empty($resultado) ? $resultado[0] : null;
+    }
+    
+    public function verificarPassword($password) {
+        return password_verify($password, $this->usu_password);
     }
 }

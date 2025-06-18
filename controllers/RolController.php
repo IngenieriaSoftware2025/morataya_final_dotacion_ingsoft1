@@ -4,6 +4,7 @@ namespace Controllers;
 use MVC\Router;
 use Model\Rol;
 use Model\Auditoria;
+use Exception;
 
 class RolController {
     

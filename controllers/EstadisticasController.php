@@ -4,7 +4,6 @@ namespace Controllers;
 use MVC\Router;
 use Model\Usuario;
 use Model\Auditoria;
-use Exception;
 
 class AuthController {
     
@@ -36,24 +35,11 @@ class AuthController {
             try {
                 // Buscar usuario por código
                 $query = "SELECT * FROM morataya_usuario WHERE usu_codigo = '{$codigo}' AND usu_situacion = 1";
-                
-                // Debug: mostrar la consulta
-                error_log("Consulta SQL: " . $query);
-                
                 $resultado = Usuario::fetchFirst($query);
                 
-                // Debug: mostrar resultado
-                error_log("Resultado de consulta: " . print_r($resultado, true));
-                
                 if($resultado) {
-                    $passwordBD = $resultado['usu_password'] ?? '';
-                    
-                    // Debug: mostrar contraseñas
-                    error_log("Contraseña ingresada: " . $password);
-                    error_log("Contraseña en BD: " . $passwordBD);
-                    
                     // Verificar contraseña (primero sin hash, luego con hash)
-                    if($password === $passwordBD || password_verify($password, $passwordBD)) {
+                    if($password === $resultado['usu_password'] || password_verify($password, $resultado['usu_password'])) {
                         // Login exitoso
                         session_start();
                         $_SESSION['usuario_id'] = $resultado['usu_id'];
@@ -66,10 +52,10 @@ class AuthController {
                         header('Location: index.php?url=dashboard');
                         exit;
                     } else {
-                        $errores[] = 'Contraseña incorrecta. Ingresada: ' . $password . ' - BD: ' . substr($passwordBD, 0, 20);
+                        $errores[] = 'Contraseña incorrecta';
                     }
                 } else {
-                    $errores[] = 'Usuario no encontrado con código: ' . $codigo;
+                    $errores[] = 'Usuario no encontrado';
                 }
             } catch (Exception $e) {
                 $errores[] = 'Error en el sistema: ' . $e->getMessage();
