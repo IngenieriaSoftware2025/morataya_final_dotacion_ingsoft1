@@ -119,7 +119,7 @@ class TallaController {
                 return;
             }
             
-            $etiqueta = $talla->talla_etiqueta;
+            $etiqueta = $talla->talla_etiqueta ?? (method_exists($talla, 'getTallaEtiqueta') ? $talla->getTallaEtiqueta() : null);
             
             $talla->talla_situacion = 0;
             $resultado = $talla->guardar();
