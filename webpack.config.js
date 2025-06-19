@@ -17,7 +17,7 @@ module.exports = {
     'js/tallas/index': './src/js/tallas/index.js',
     'js/tipos/index': './src/js/tipos/index.js',
     'js/roles/index': './src/js/roles/index.js',
-    'js/auditoria/index': './src/js/auditoria/index.js',
+    'js/auditoria/index': './src/js/auditoria/index.js'
   },
   output: {
     filename: '[name].js',

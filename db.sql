@@ -126,3 +126,91 @@ CREATE TABLE morataya_entregas_dotacion (
     FOREIGN KEY (solicitud_id) REFERENCES morataya_solicitudes_dotacion(solicitud_id),
     FOREIGN KEY (usuario_id) REFERENCES morataya_usuario(usu_id)
 );
+
+-- Insertar roles del sistema
+INSERT INTO morataya_rol (rol_nombre, rol_nombre_ct, rol_situacion) VALUES 
+('ADMINISTRADOR', 'ADMIN', 1);
+INSERT INTO morataya_rol (rol_nombre, rol_nombre_ct, rol_situacion) VALUES 
+('USUARIO', 'USER', 1);
+INSERT INTO morataya_rol (rol_nombre, rol_nombre_ct, rol_situacion) VALUES 
+('SUPERVISOR', 'SUPER', 1);
+INSERT INTO morataya_rol (rol_nombre, rol_nombre_ct, rol_situacion) VALUES 
+('ENCARGADO_INVENTARIO', 'INV', 1);
+INSERT INTO morataya_rol (rol_nombre, rol_nombre_ct, rol_situacion) VALUES 
+('SOLO_CONSULTA', 'READ', 1);
+
+
+INSERT INTO morataya_permiso (permiso_usuario, permiso_rol, permiso_situacion) VALUES 
+(1, 1, 1);
+INSERT INTO morataya_permiso (permiso_usuario, permiso_rol, permiso_situacion) VALUES 
+(3, 3, 1);
+INSERT INTO morataya_permiso (permiso_usuario, permiso_rol, permiso_situacion) VALUES 
+(4, 4, 1);
+INSERT INTO morataya_permiso (permiso_usuario, permiso_rol, permiso_situacion) VALUES 
+(5, 5, 1);
+
+INSERT INTO morataya_personal (personal_nombre, personal_cui, personal_puesto, personal_fecha_ingreso, personal_situacion) VALUES 
+('Soldado Juan Morales', '1234567890123', 'Soldado Raso', '2023-01-15', 1);
+INSERT INTO morataya_personal (personal_nombre, personal_cui, personal_puesto, personal_fecha_ingreso, personal_situacion) VALUES 
+('Cabo Pedro Sanchez', '2345678901234', 'Cabo', '2022-06-10', 1);
+INSERT INTO morataya_personal (personal_nombre, personal_cui, personal_puesto, personal_fecha_ingreso, personal_situacion) VALUES 
+('Sargento Luis Ramirez', '3456789012345', 'Sargento Segundo', '2021-03-20', 1);
+INSERT INTO morataya_personal (personal_nombre, personal_cui, personal_puesto, personal_fecha_ingreso, personal_situacion) VALUES 
+('Teniente Sofia Martinez', '4567890123456', 'Teniente', '2020-09-05', 1);
+INSERT INTO morataya_personal (personal_nombre, personal_cui, personal_puesto, personal_fecha_ingreso, personal_situacion) VALUES 
+('Capitan Roberto Hernandez', '5678901234567', 'Capitan', '2019-11-12', 1);
+
+INSERT INTO morataya_tipos_dotacion (tipo_nombre, tipo_descripcion, tipo_situacion) VALUES 
+('BOTAS', 'Botas militares de campaña', 1);
+INSERT INTO morataya_tipos_dotacion (tipo_nombre, tipo_descripcion, tipo_situacion) VALUES 
+('CAMISA', 'Camisa de uniforme militar', 1);
+INSERT INTO morataya_tipos_dotacion (tipo_nombre, tipo_descripcion, tipo_situacion) VALUES 
+('PANTALON', 'Pantalón de uniforme militar', 1);
+INSERT INTO morataya_tipos_dotacion (tipo_nombre, tipo_descripcion, tipo_situacion) VALUES 
+('GORRA', 'Gorra militar reglamentaria', 1);
+INSERT INTO morataya_tipos_dotacion (tipo_nombre, tipo_descripcion, tipo_situacion) VALUES 
+('CINTURON', 'Cinturón militar de cuero', 1);
+
+INSERT INTO morataya_tallas (talla_etiqueta, talla_situacion) VALUES 
+('S', 1);
+INSERT INTO morataya_tallas (talla_etiqueta, talla_situacion) VALUES 
+('M', 1);
+INSERT INTO morataya_tallas (talla_etiqueta, talla_situacion) VALUES 
+('L', 1);
+INSERT INTO morataya_tallas (talla_etiqueta, talla_situacion) VALUES 
+('XL', 1);
+INSERT INTO morataya_tallas (talla_etiqueta, talla_situacion) VALUES 
+('XXL', 1);
+
+INSERT INTO morataya_inventario_dotacion (tipo_id, talla_id, cantidad, fecha_ingreso, inv_situacion) VALUES 
+(1, 1, 50, TODAY, 1);
+INSERT INTO morataya_inventario_dotacion (tipo_id, talla_id, cantidad, fecha_ingreso, inv_situacion) VALUES 
+(1, 2, 75, TODAY, 1);
+INSERT INTO morataya_inventario_dotacion (tipo_id, talla_id, cantidad, fecha_ingreso, inv_situacion) VALUES 
+(2, 2, 100, TODAY, 1);
+INSERT INTO morataya_inventario_dotacion (tipo_id, talla_id, cantidad, fecha_ingreso, inv_situacion) VALUES 
+(3, 3, 80, TODAY, 1);
+INSERT INTO morataya_inventario_dotacion (tipo_id, talla_id, cantidad, fecha_ingreso, inv_situacion) VALUES 
+(4, 1, 45, TODAY, 1);
+
+INSERT INTO morataya_solicitudes_dotacion (personal_id, tipo_id, talla_id, fecha_solicitud, estado_entrega, solicitud_situacion) VALUES 
+(1, 1, 2, TODAY, 0, 1);
+INSERT INTO morataya_solicitudes_dotacion (personal_id, tipo_id, talla_id, fecha_solicitud, estado_entrega, solicitud_situacion) VALUES 
+(2, 2, 3, TODAY, 1, 1);
+INSERT INTO morataya_solicitudes_dotacion (personal_id, tipo_id, talla_id, fecha_solicitud, estado_entrega, solicitud_situacion) VALUES 
+(3, 3, 3, TODAY, 0, 1);
+INSERT INTO morataya_solicitudes_dotacion (personal_id, tipo_id, talla_id, fecha_solicitud, estado_entrega, solicitud_situacion) VALUES 
+(4, 4, 1, TODAY, 1, 1);
+INSERT INTO morataya_solicitudes_dotacion (personal_id, tipo_id, talla_id, fecha_solicitud, estado_entrega, solicitud_situacion) VALUES 
+(5, 5, 4, TODAY, 0, 1);
+
+-- Insertar usuarios del sistema
+-- Nota: Las contraseñas están hasheadas con password_hash() de PHP
+INSERT INTO morataya_usuario (usu_nombre, usu_codigo, usu_password, usu_correo, usu_situacion) VALUES 
+('Carlos Rodriguez', 100001, '123456', 'carlos@mindef.gob.gt', 1);
+INSERT INTO morataya_usuario (usu_nombre, usu_codigo, usu_password, usu_correo, usu_situacion) VALUES 
+('Maria Lopez', 100002, '123456', 'maria@mindef.gob.gt', 1);
+INSERT INTO morataya_usuario (usu_nombre, usu_codigo, usu_password, usu_correo, usu_situacion) VALUES 
+('Jose Perez', 100003, '123456', 'jose@mindef.gob.gt', 1);
+INSERT INTO morataya_usuario (usu_nombre, usu_codigo, usu_password, usu_correo, usu_situacion) VALUES 
+('Ana Garcia', 100004, '123456', 'ana@mindef.gob.gt', 1);
