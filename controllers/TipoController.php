@@ -4,6 +4,7 @@ namespace Controllers;
 use MVC\Router;
 use Model\TipoDotacion;
 use Model\Auditoria;
+use Exception;
 
 class TipoController {
     
@@ -22,7 +23,7 @@ class TipoController {
         } catch (Exception $e) {
             echo json_encode([
                 'resultado' => false,
-                'mensaje' => 'Error al obtener tipos de dotación'
+                'mensaje' => 'Error al obtener tipos de dotación: ' . $e->getMessage()
             ]);
         }
     }
@@ -38,10 +39,10 @@ class TipoController {
         
         $errores = [];
         
+        $id = isset($_POST['tipo_id']) ? (int)$_POST['tipo_id'] : 0;
         $nombre = isset($_POST['tipo_nombre']) ? trim($_POST['tipo_nombre']) : '';
         $descripcion = isset($_POST['tipo_descripcion']) ? trim($_POST['tipo_descripcion']) : '';
         
-        // Validaciones
         if(strlen(trim($nombre)) < 3 || strlen(trim($nombre)) > 50) {
             $errores[] = 'El nombre debe tener entre 3 y 50 caracteres';
         }
@@ -50,8 +51,10 @@ class TipoController {
             $errores[] = 'La descripción no puede exceder 100 caracteres';
         }
         
-        // Verificar nombre único usando SQL directo
         $query = "SELECT COUNT(*) as total FROM morataya_tipos_dotacion WHERE tipo_nombre = '{$nombre}' AND tipo_situacion = 1";
+        if($id > 0) {
+            $query .= " AND tipo_id != {$id}";
+        }
         $resultado = TipoDotacion::fetchFirst($query);
         if(($resultado['total'] ?? 0) > 0) {
             $errores[] = 'Ya existe un tipo de dotación con ese nombre';
@@ -59,18 +62,29 @@ class TipoController {
         
         if(empty($errores)) {
             try {
-                $tipo = new TipoDotacion([
-                    'tipo_nombre' => $nombre,
-                    'tipo_descripcion' => $descripcion
-                ]);
+                if($id > 0) {
+                    $sqlUpdate = "UPDATE morataya_tipos_dotacion SET 
+                        tipo_nombre = '{$nombre}',
+                        tipo_descripcion = '{$descripcion}'
+                        WHERE tipo_id = {$id}";
+                    $resultado = TipoDotacion::SQL($sqlUpdate);
+                    $exito = true;
+                } else {
+                    $tipo = new TipoDotacion([
+                        'tipo_nombre' => $nombre,
+                        'tipo_descripcion' => $descripcion
+                    ]);
+                    
+                    $resultado = $tipo->guardar();
+                    $exito = $resultado['resultado'] ?? false;
+                }
                 
-                $resultado = $tipo->guardar();
-                
-                if($resultado) {
+                if($exito) {
+                    $accion = $id > 0 ? 'Actualización' : 'Creación';
                     $auditoria = new Auditoria([
                         'usu_id' => $_SESSION['usuario_id'],
                         'aud_modulo' => 'Tipos de Dotación',
-                        'aud_accion' => 'Creación de tipo: ' . $nombre,
+                        'aud_accion' => $accion . ' de tipo: ' . $nombre,
                         'aud_ip' => $_SERVER['REMOTE_ADDR'],
                         'aud_navegador' => substr($_SERVER['HTTP_USER_AGENT'], 0, 100)
                     ]);
@@ -78,7 +92,7 @@ class TipoController {
                     
                     echo json_encode([
                         'resultado' => true,
-                        'mensaje' => 'Tipo de dotación creado correctamente'
+                        'mensaje' => 'Tipo de dotación ' . ($id > 0 ? 'actualizado' : 'creado') . ' correctamente'
                     ]);
                     return;
                 }
@@ -111,18 +125,32 @@ class TipoController {
         }
         
         try {
-            $tipo = TipoDotacion::find($id);
+            $queryInventario = "SELECT COUNT(*) as total FROM morataya_inventario_dotacion WHERE tipo_id = {$id} AND inv_situacion = 1";
+            $inventario = TipoDotacion::fetchFirst($queryInventario);
+            
+            $querySolicitudes = "SELECT COUNT(*) as total FROM morataya_solicitudes_dotacion WHERE tipo_id = {$id} AND solicitud_situacion = 1";
+            $solicitudes = TipoDotacion::fetchFirst($querySolicitudes);
+            
+            if(($inventario['total'] ?? 0) > 0 || ($solicitudes['total'] ?? 0) > 0) {
+                echo json_encode([
+                    'resultado' => false,
+                    'mensaje' => 'No se puede eliminar este tipo porque está siendo usado en inventario o solicitudes'
+                ]);
+                return;
+            }
+            
+            $query = "SELECT * FROM morataya_tipos_dotacion WHERE tipo_id = {$id} AND tipo_situacion = 1";
+            $tipo = TipoDotacion::fetchFirst($query);
             
             if(!$tipo) {
                 echo json_encode(['resultado' => false, 'mensaje' => 'Tipo no encontrado']);
                 return;
             }
             
-            $nombre = $tipo->tipo_nombre;
+            $nombre = $tipo['tipo_nombre'];
             
-            // Soft delete
-            $tipo->tipo_situacion = 0;
-            $resultado = $tipo->guardar();
+            $sqlUpdate = "UPDATE morataya_tipos_dotacion SET tipo_situacion = 0 WHERE tipo_id = {$id}";
+            $resultado = TipoDotacion::SQL($sqlUpdate);
             
             if($resultado) {
                 $auditoria = new Auditoria([

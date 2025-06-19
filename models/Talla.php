@@ -6,11 +6,13 @@ class Talla extends ActiveRecord {
     
     public static $tabla = 'morataya_tallas';
     public static $columnasDB = [
+        'talla_id',
         'talla_etiqueta',
         'talla_situacion'
     ];
     
     public static $idTabla = 'talla_id';
+    
     public $talla_id;
     public $talla_etiqueta;
     public $talla_situacion;

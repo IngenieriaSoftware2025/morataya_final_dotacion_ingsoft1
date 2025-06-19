@@ -50,11 +50,15 @@ CREATE TABLE morataya_permiso_aplicacion (
 CREATE TABLE morataya_auditoria (
     aud_id SERIAL PRIMARY KEY,
     usu_id INT NOT NULL,
-    aud_fecha DATETIME YEAR TO SECOND DEFAULT CURRENT YEAR TO SECOND,
-    aud_modulo VARCHAR(100),
-    aud_accion VARCHAR(255),
+    aud_usuario_nombre VARCHAR(100) NOT NULL,
+    aud_modulo VARCHAR(100) NOT NULL,
+    aud_accion VARCHAR(100) NOT NULL,
+    aud_descripcion VARCHAR(255),
+    aud_ruta VARCHAR(255),
     aud_ip VARCHAR(50),
     aud_navegador VARCHAR(100),
+    aud_fecha DATETIME YEAR TO SECOND DEFAULT CURRENT YEAR TO SECOND,
+    aud_fecha_creacion DATETIME YEAR TO SECOND DEFAULT CURRENT YEAR TO SECOND,
     aud_situacion SMALLINT DEFAULT 1,
     FOREIGN KEY (usu_id) REFERENCES morataya_usuario(usu_id)
 );

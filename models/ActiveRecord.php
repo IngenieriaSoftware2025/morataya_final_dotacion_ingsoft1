@@ -13,7 +13,6 @@ class ActiveRecord {
     // Alertas y Mensajes
     protected static $alertas = [];
     
-    // Definir la conexión a la BD - includes/database.php
     public static function setDB($database) {
         self::$db = $database;
     }
@@ -49,7 +48,6 @@ class ActiveRecord {
         $query = "SELECT * FROM " . static::$tabla;
         $resultado = self::consultarSQL($query);
 
-        // debuguear($resultado);
         return $resultado;
     }
 
@@ -110,7 +108,6 @@ class ActiveRecord {
         $query .= " ) ";
         
 
-        // debuguear($query);
 
         // Resultado de la consulta
         $resultado = self::$db->exec($query);
@@ -150,7 +147,6 @@ class ActiveRecord {
             
         }
 
-        // debuguear($query);
 
         $resultado = self::$db->exec($query);
         return [
@@ -220,7 +216,6 @@ class ActiveRecord {
 
 
 
-    // Identificar y unir los atributos de la BD
     public function atributos() {
         $atributos = [];
         foreach(static::$columnasDB as $columna) {

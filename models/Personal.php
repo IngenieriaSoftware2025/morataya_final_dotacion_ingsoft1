@@ -6,6 +6,7 @@ class Personal extends ActiveRecord {
     
     public static $tabla = 'morataya_personal';
     public static $columnasDB = [
+        'personal_id',
         'personal_nombre',
         'personal_cui',
         'personal_puesto',
@@ -14,6 +15,7 @@ class Personal extends ActiveRecord {
     ];
     
     public static $idTabla = 'personal_id';
+    
     public $personal_id;
     public $personal_nombre;
     public $personal_cui;

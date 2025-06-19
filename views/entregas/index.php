@@ -46,4 +46,4 @@
     </div>
 </div>
 
-<script src="<?= asset('build/js/dotacion/entregas.js'); ?>"></script>
+<script src="<?= asset('build/js/entregas/index.js'); ?>"></script>

@@ -27,7 +27,6 @@ class ReportesController {
         $router->render('reportes/inventario', []);
     }
     
-    // ==================== APIs PARA ESTADÍSTICAS ====================
     
     public static function estadisticasAPI() {
         header('Content-Type: application/json');
@@ -171,7 +170,6 @@ class ReportesController {
         }
     }
     
-    // ==================== MÉTODOS PRIVADOS ====================
     
     private static function obtenerResumenGeneral() {
         try {

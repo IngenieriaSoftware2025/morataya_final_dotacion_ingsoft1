@@ -49,7 +49,6 @@ class PersonalController {
         $puesto = isset($_POST['personal_puesto']) ? trim($_POST['personal_puesto']) : '';
         $fecha_ingreso = isset($_POST['personal_fecha_ingreso']) ? $_POST['personal_fecha_ingreso'] : date('Y-m-d');
         
-        // Validaciones
         if(strlen(trim($nombre)) < 3 || strlen(trim($nombre)) > 100) {
             $errores[] = 'El nombre debe tener entre 3 y 100 caracteres';
         }
@@ -66,7 +65,6 @@ class PersonalController {
             $errores[] = 'La fecha de ingreso no es válida';
         }
         
-        // Verificar CUI único usando SQL directo
         $query = "SELECT COUNT(*) as total FROM morataya_personal WHERE personal_cui = '{$cui}' AND personal_situacion = 1";
         $resultado = Personal::fetchFirst($query);
         if(($resultado['total'] ?? 0) > 0) {
@@ -129,7 +127,6 @@ class PersonalController {
         }
         
         try {
-            // Buscar personal usando SQL directo
             $query = "SELECT * FROM morataya_personal WHERE personal_id = {$id} AND personal_situacion = 1";
             $personal = Personal::fetchFirst($query);
             
@@ -140,7 +137,6 @@ class PersonalController {
             
             $nombre = $personal['personal_nombre'];
             
-            // Soft delete usando SQL directo
             $sqlUpdate = "UPDATE morataya_personal SET personal_situacion = 0 WHERE personal_id = {$id}";
             $resultado = Personal::SQL($sqlUpdate);
             

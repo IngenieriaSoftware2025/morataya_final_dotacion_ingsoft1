@@ -17,7 +17,6 @@ class SolicitudDotacion extends ActiveRecord {
     
     public static $idTabla = 'solicitud_id';
     
-    // TODAS las propiedades públicas - ESTO ES CRÍTICO
     public $solicitud_id;
     public $personal_id;
     public $tipo_id;
@@ -36,7 +35,6 @@ class SolicitudDotacion extends ActiveRecord {
         $this->solicitud_situacion = $args['solicitud_situacion'] ?? 1;
     }
     
-    // Método para buscar solicitudes con detalles
     public static function obtenerConDetalles() {
         $query = "
             SELECT 

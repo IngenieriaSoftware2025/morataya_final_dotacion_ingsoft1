@@ -34,27 +34,21 @@ class AuthController {
         
         if(empty($errores)) {
             try {
-                // Buscar usuario por código
                 $query = "SELECT * FROM morataya_usuario WHERE usu_codigo = '{$codigo}' AND usu_situacion = 1";
                 
-                // Debug: mostrar la consulta
                 error_log("Consulta SQL: " . $query);
                 
                 $resultado = Usuario::fetchFirst($query);
                 
-                // Debug: mostrar resultado
                 error_log("Resultado de consulta: " . print_r($resultado, true));
                 
                 if($resultado) {
                     $passwordBD = $resultado['usu_password'] ?? '';
                     
-                    // Debug: mostrar contraseñas
                     error_log("Contraseña ingresada: " . $password);
                     error_log("Contraseña en BD: " . $passwordBD);
                     
-                    // Verificar contraseña (primero sin hash, luego con hash)
                     if($password === $passwordBD || password_verify($password, $passwordBD)) {
-                        // Login exitoso
                         session_start();
                         $_SESSION['usuario_id'] = $resultado['usu_id'];
                         $_SESSION['usuario_nombre'] = $resultado['usu_nombre'];
@@ -62,7 +56,6 @@ class AuthController {
                         $_SESSION['usuario_fotografia'] = $resultado['usu_fotografia'] ?? '';
                         $_SESSION['login'] = true;
                         
-                        // Redirigir a estadísticas
                         header('Location: index.php?url=dashboard');
                         exit;
                     } else {
@@ -76,7 +69,6 @@ class AuthController {
             }
         }
         
-        // Mostrar formulario con errores
         $router->render('auth/index', ['errores' => $errores], 'principal');
     }
     

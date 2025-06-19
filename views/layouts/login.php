@@ -20,5 +20,7 @@
             </div>
         </div>
     </div>
+
+    <script src="<?= asset('build/js/app.js'); ?>"></script>
 </body>
 </html>

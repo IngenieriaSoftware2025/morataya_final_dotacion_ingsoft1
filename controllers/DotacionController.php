@@ -13,7 +13,6 @@ use Exception;
 
 class DotacionController {
     
-    // Inventario
     public static function inventario(Router $router) {
         AuthController::verificarLogin();
         $router->render('dotacion/inventario/index', []);
@@ -55,17 +54,14 @@ class DotacionController {
         
         if(empty($errores)) {
             try {
-                // Verificar si ya existe inventario para este tipo y talla usando SQL directo
                 $inventarioExistente = self::buscarInventarioExistentePorSQL($tipo_id, $talla_id);
                 
                 if($inventarioExistente) {
-                    // Actualizar cantidad existente usando SQL directo
                     $nuevaCantidad = $inventarioExistente['cantidad'] + $cantidad;
                     $sqlUpdate = "UPDATE morataya_inventario_dotacion SET cantidad = {$nuevaCantidad} WHERE inv_id = {$inventarioExistente['inv_id']}";
                     $resultado = InventarioDotacion::SQL($sqlUpdate);
                     $exito = true;
                 } else {
-                    // Crear nuevo registro
                     $inventario = new InventarioDotacion([
                         'tipo_id' => $tipo_id,
                         'talla_id' => $talla_id,
@@ -103,7 +99,6 @@ class DotacionController {
         ]);
     }
     
-    // Solicitudes
     public static function solicitudes(Router $router) {
         AuthController::verificarLogin();
         $router->render('dotacion/solicitudes/index', []);
@@ -173,7 +168,6 @@ class DotacionController {
         if(!$tipo_id) $errores[] = 'Debe seleccionar un tipo de dotación';
         if(!$talla_id) $errores[] = 'Debe seleccionar una talla';
         
-        // Validar límite anual (máximo 3 dotaciones por año) usando SQL directo
         if($personal_id) {
             $año_actual = date('Y');
             $entregas_año = self::contarEntregasAnualesPorSQL($personal_id, $año_actual);
@@ -183,7 +177,6 @@ class DotacionController {
             }
         }
         
-        // Verificar que no tenga solicitud pendiente del mismo tipo usando SQL directo
         if($personal_id && $tipo_id) {
             $solicitudExistente = self::verificarSolicitudPendientePorSQL($personal_id, $tipo_id);
             if($solicitudExistente) {
@@ -229,7 +222,6 @@ class DotacionController {
         ]);
     }
     
-    // Entregas
     public static function entregas(Router $router) {
         AuthController::verificarLogin();
         $router->render('dotacion/entregas/index', []);
@@ -265,14 +257,12 @@ class DotacionController {
         
         if(!$solicitud_id) $errores[] = 'Debe seleccionar una solicitud';
         
-        // Buscar solicitud usando SQL directo
         $solicitud = self::buscarSolicitudPorSQL($solicitud_id);
         if(!$solicitud || $solicitud['estado_entrega'] == 1) {
             $errores[] = 'Solicitud no válida o ya entregada';
         }
         
         if($solicitud) {
-            // Verificar inventario disponible usando SQL directo
             $inventario = self::buscarInventarioExistentePorSQL($solicitud['tipo_id'], $solicitud['talla_id']);
             if(!$inventario || $inventario['cantidad'] < 1) {
                 $errores[] = 'No hay inventario disponible para esta dotación';
@@ -281,7 +271,6 @@ class DotacionController {
         
         if(empty($errores)) {
             try {
-                // Crear entrega
                 $entrega = new EntregaDotacion([
                     'solicitud_id' => $solicitud_id,
                     'usuario_id' => $_SESSION['usuario_id']
@@ -290,11 +279,9 @@ class DotacionController {
                 $resultado = $entrega->guardar();
                 
                 if($resultado['resultado'] ?? false) {
-                    // Actualizar estado de solicitud usando SQL directo
                     $sqlUpdateSolicitud = "UPDATE morataya_solicitudes_dotacion SET estado_entrega = 1 WHERE solicitud_id = {$solicitud_id}";
                     SolicitudDotacion::SQL($sqlUpdateSolicitud);
                     
-                    // Descontar del inventario usando SQL directo
                     $nuevaCantidad = $inventario['cantidad'] - 1;
                     $sqlUpdateInventario = "UPDATE morataya_inventario_dotacion SET cantidad = {$nuevaCantidad} WHERE inv_id = {$inventario['inv_id']}";
                     InventarioDotacion::SQL($sqlUpdateInventario);
@@ -326,7 +313,6 @@ class DotacionController {
         ]);
     }
     
-    // ==================== MÉTODOS PRIVADOS CON SQL DIRECTO ====================
     
     private static function obtenerInventarioConDetalles() {
         $query = "

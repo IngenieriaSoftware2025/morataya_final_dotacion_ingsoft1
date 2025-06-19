@@ -7,13 +7,11 @@ function debuguear($variable) {
     exit;
 }
 
-// Escapa / Sanitizar el HTML
 function s($html) {
     $s = htmlspecialchars($html);
     return $s;
 }
 
-// Función que revisa que el usuario este autenticado
 function isAuth() {
     session_start();
     if(!isset($_SESSION['login'])) {
@@ -75,11 +73,6 @@ function asset($ruta){
     return "/". $_ENV['APP_NAME']."/public/" . $ruta;
 }
 
-// =============== FUNCIONES DE VALIDACIÓN AGREGADAS ===============
-
-/**
- * Valida que un texto tenga la longitud correcta
- */
 function validarTexto($texto, $minimo = 1, $maximo = 255) {
     if (!is_string($texto)) {
         return false;
@@ -90,9 +83,6 @@ function validarTexto($texto, $minimo = 1, $maximo = 255) {
     return $longitud >= $minimo && $longitud <= $maximo;
 }
 
-/**
- * Valida que un número esté en el rango especificado
- */
 function validarNumero($numero, $minimo = null, $maximo = null) {
     if (!is_numeric($numero)) {
         return false;
@@ -111,16 +101,10 @@ function validarNumero($numero, $minimo = null, $maximo = null) {
     return true;
 }
 
-/**
- * Valida formato de correo electrónico
- */
 function validarCorreo($correo) {
     return filter_var($correo, FILTER_VALIDATE_EMAIL) !== false;
 }
 
-/**
- * Valida y sube fotografías de usuario
- */
 function subirFotografia($archivo, $destino) {
     try {
         // Verificar que no hay errores
@@ -172,17 +156,11 @@ function subirFotografia($archivo, $destino) {
     }
 }
 
-/**
- * Valida fecha en formato Y-m-d
- */
 function validarFecha($fecha) {
     $d = DateTime::createFromFormat('Y-m-d', $fecha);
     return $d && $d->format('Y-m-d') === $fecha;
 }
 
-/**
- * Valida CUI guatemalteco (13 dígitos)
- */
 function validarCUI($cui) {
     // Debe ser exactamente 13 dígitos
     if (!preg_match('/^\d{13}$/', $cui)) {

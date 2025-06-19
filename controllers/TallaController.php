@@ -23,7 +23,7 @@ class TallaController {
         } catch (Exception $e) {
             echo json_encode([
                 'resultado' => false,
-                'mensaje' => 'Error al obtener tallas'
+                'mensaje' => 'Error al obtener tallas: ' . $e->getMessage()
             ]);
         }
     }
@@ -41,18 +41,15 @@ class TallaController {
         
         $etiqueta = isset($_POST['talla_etiqueta']) ? trim($_POST['talla_etiqueta']) : '';
         
-        // Validaciones
         if(strlen(trim($etiqueta)) < 1 || strlen(trim($etiqueta)) > 10) {
             $errores[] = 'La etiqueta debe tener entre 1 y 10 caracteres';
         }
         
-        // Validar formato de talla simplificado
         $etiqueta = strtoupper(trim($etiqueta));
         if(!is_numeric($etiqueta) && !in_array($etiqueta, ['XS', 'S', 'M', 'L', 'XL', 'XXL', 'XXXL'])) {
             $errores[] = 'Formato de talla no válido (use números 35-50 o XS, S, M, L, XL, XXL)';
         }
         
-        // Verificar etiqueta única usando SQL directo
         $query = "SELECT COUNT(*) as total FROM morataya_tallas WHERE talla_etiqueta = '{$etiqueta}' AND talla_situacion = 1";
         $resultado = Talla::fetchFirst($query);
         if(($resultado['total'] ?? 0) > 0) {
@@ -67,7 +64,7 @@ class TallaController {
                 
                 $resultado = $talla->guardar();
                 
-                if($resultado) {
+                if($resultado['resultado'] ?? false) {
                     $auditoria = new Auditoria([
                         'usu_id' => $_SESSION['usuario_id'],
                         'aud_modulo' => 'Tallas',
@@ -112,17 +109,18 @@ class TallaController {
         }
         
         try {
-            $talla = Talla::find($id);
+            $query = "SELECT * FROM morataya_tallas WHERE talla_id = {$id} AND talla_situacion = 1";
+            $talla = Talla::fetchFirst($query);
             
             if(!$talla) {
                 echo json_encode(['resultado' => false, 'mensaje' => 'Talla no encontrada']);
                 return;
             }
             
-            $etiqueta = $talla->talla_etiqueta ?? (method_exists($talla, 'getTallaEtiqueta') ? $talla->getTallaEtiqueta() : null);
+            $etiqueta = $talla['talla_etiqueta'];
             
-            $talla->talla_situacion = 0;
-            $resultado = $talla->guardar();
+            $sqlUpdate = "UPDATE morataya_tallas SET talla_situacion = 0 WHERE talla_id = {$id}";
+            $resultado = Talla::SQL($sqlUpdate);
             
             if($resultado) {
                 $auditoria = new Auditoria([

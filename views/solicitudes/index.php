@@ -19,13 +19,11 @@
                 </tr>
             </thead>
             <tbody>
-                <!-- Se carga dinámicamente -->
             </tbody>
         </table>
     </div>
 </div>
 
-<!-- Modal Nueva Solicitud -->
 <div class="modal fade" id="ModalSolicitud" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -63,4 +61,4 @@
     </div>
 </div>
 
-<script src="<?= asset('build/js/dotacion/solicitudes.js'); ?>"></script>
+<script src="<?= asset('build/js/solicitudes/index.js'); ?>"></script>

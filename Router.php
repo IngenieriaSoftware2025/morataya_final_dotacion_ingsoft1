@@ -10,12 +10,12 @@ class Router
 
     public function get($url, $fn)
     {
-        $this->getRoutes[$this->base . $url] = $fn;
+        $this->getRoutes[$url] = $fn;
     }
 
     public function post($url, $fn)
     {
-        $this->postRoutes[$this->base .$url] = $fn;
+        $this->postRoutes[$url] = $fn;
     }
 
     public function setBaseURL($base){
@@ -24,11 +24,22 @@ class Router
 
     public function comprobarRutas()
     {
-        // Obtener la URL desde parámetro GET si no hay .htaccess
         if(isset($_GET['url'])) {
-            $currentUrl = $this->base . '/' . $_GET['url'];
+            $currentUrl = '/' . $_GET['url'];
         } else {
-            $currentUrl = $_SERVER['REQUEST_URI'] ? str_replace("?" . $_SERVER['QUERY_STRING'], '', $_SERVER['REQUEST_URI']) : $this->base .'/';
+            $currentUrl = $_SERVER['REQUEST_URI'] ?? '/';
+            
+            if(strpos($currentUrl, '?') !== false) {
+                $currentUrl = substr($currentUrl, 0, strpos($currentUrl, '?'));
+            }
+            
+            if(!empty($this->base) && strpos($currentUrl, $this->base) === 0) {
+                $currentUrl = substr($currentUrl, strlen($this->base));
+            }
+        }
+        
+        if(empty($currentUrl) || $currentUrl === '' || $currentUrl === $this->base) {
+            $currentUrl = '/';
         }
         
         $method = $_SERVER['REQUEST_METHOD'];
@@ -39,15 +50,18 @@ class Router
             $fn = $this->postRoutes[$currentUrl] ?? null;
         }
         
-        if ( $fn ) {
-            // Call user fn va a llamar una función cuando no sabemos cual sera
-            call_user_func($fn, $this); // This es para pasar argumentos
+        if ($fn) {
+            call_user_func($fn, $this);
         } else {
-            if( empty($_SERVER['HTTP_X_REQUESTED_WITH'])){
-                $this->render('pages/notfound');
-            } else {
+            if(!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest') {
                 header('Content-type: application/json');
-                echo json_encode(["ERROR" => "PÁGINA NO ENCONTRADA"]);
+                echo json_encode([
+                    "ERROR" => "ENDPOINT NO ENCONTRADO", 
+                    "URL" => $currentUrl,
+                    "RUTAS_DISPONIBLES" => array_keys($this->getRoutes)
+                ]);
+            } else {
+                $this->render('pages/notfound');
             }
         }
     }
@@ -67,7 +81,7 @@ class Router
             include_once $viewPath;
         } else {
             echo "<h1>Error: Vista no encontrada</h1>";
-            echo "<p>No se pudo encontrar la vista: $view.php</p>";
+            echo "<p>No se pudo encontrar la vista: $view.php en $viewPath</p>";
         }
         
         $contenido = ob_get_clean(); // Limpia el Buffer

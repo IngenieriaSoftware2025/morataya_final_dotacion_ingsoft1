@@ -20,19 +20,77 @@ class UsuarioController {
         $router->render('usuarios/crear', []);
     }
     
+    public static function editar(Router $router) {
+        AuthController::verificarLogin();
+        
+        $id = $_GET['id'] ?? 0;
+        if(!$id) {
+            header('Location: /usuarios');
+            exit;
+        }
+        
+        $router->render('usuarios/editar', ['usuario_id' => $id]);
+    }
+    
     public static function obtenerAPI() {
         header('Content-Type: application/json');
         AuthController::verificarLogin();
         
         try {
-            $usuarios = Usuario::all();
+            $query = "
+                SELECT u.*, 
+                       GROUP_CONCAT(r.rol_nombre SEPARATOR ', ') as roles_nombres
+                FROM morataya_usuario u
+                LEFT JOIN morataya_permiso p ON u.usu_id = p.permiso_usuario AND p.permiso_situacion = 1
+                LEFT JOIN morataya_rol r ON p.permiso_rol = r.rol_id AND r.rol_situacion = 1
+                WHERE u.usu_situacion = 1
+                GROUP BY u.usu_id
+                ORDER BY u.usu_nombre
+            ";
+            
+            $usuarios = Usuario::fetchArray($query);
             echo json_encode($usuarios);
         } catch (Exception $e) {
-            http_response_code(400);
             echo json_encode([
                 'resultado' => false,
-                'mensaje' => 'Error al obtener usuarios',
-                'detalle' => $e->getMessage()
+                'mensaje' => 'Error al obtener usuarios: ' . $e->getMessage()
+            ]);
+        }
+    }
+    
+    public static function obtenerPorIdAPI() {
+        header('Content-Type: application/json');
+        AuthController::verificarLogin();
+        
+        $id = $_GET['id'] ?? 0;
+        if(!$id) {
+            echo json_encode(['resultado' => false, 'mensaje' => 'ID no proporcionado']);
+            return;
+        }
+        
+        try {
+            $query = "SELECT * FROM morataya_usuario WHERE usu_id = {$id} AND usu_situacion = 1";
+            $usuario = Usuario::fetchFirst($query);
+            
+            if(!$usuario) {
+                echo json_encode(['resultado' => false, 'mensaje' => 'Usuario no encontrado']);
+                return;
+            }
+            
+            $queryRoles = "
+                SELECT r.rol_id 
+                FROM morataya_permiso p 
+                INNER JOIN morataya_rol r ON p.permiso_rol = r.rol_id 
+                WHERE p.permiso_usuario = {$id} AND p.permiso_situacion = 1 AND r.rol_situacion = 1
+            ";
+            $roles = Usuario::fetchArray($queryRoles);
+            $usuario['roles'] = array_column($roles, 'rol_id');
+            
+            echo json_encode(['resultado' => true, 'usuario' => $usuario]);
+        } catch (Exception $e) {
+            echo json_encode([
+                'resultado' => false,
+                'mensaje' => 'Error al obtener usuario: ' . $e->getMessage()
             ]);
         }
     }
@@ -48,6 +106,7 @@ class UsuarioController {
         
         $errores = [];
         
+        $id = isset($_POST['usu_id']) ? (int)$_POST['usu_id'] : 0;
         $nombre = isset($_POST['usu_nombre']) ? trim($_POST['usu_nombre']) : '';
         $codigo = isset($_POST['usu_codigo']) ? (int)$_POST['usu_codigo'] : 0;
         $correo = isset($_POST['usu_correo']) ? trim($_POST['usu_correo']) : '';
@@ -66,17 +125,32 @@ class UsuarioController {
             $errores[] = 'El correo electrónico no es válido';
         }
         
-        if(empty($password)) {
-            $errores[] = 'La contraseña es obligatoria';
+        if($id == 0 && empty($password)) {
+            $errores[] = 'La contraseña es obligatoria para usuarios nuevos';
         }
         
         if($password && strlen($password) < 6) {
             $errores[] = 'La contraseña debe tener al menos 6 caracteres';
         }
         
-        $usuarioExistente = Usuario::where('usu_codigo', $codigo);
-        if($usuarioExistente) {
+        $query = "SELECT COUNT(*) as total FROM morataya_usuario WHERE usu_codigo = {$codigo} AND usu_situacion = 1";
+        if($id > 0) {
+            $query .= " AND usu_id != {$id}";
+        }
+        $usuarioExistente = Usuario::fetchFirst($query);
+        if(($usuarioExistente['total'] ?? 0) > 0) {
             $errores[] = 'El código de usuario ya existe';
+        }
+        
+        if($correo) {
+            $queryCorreo = "SELECT COUNT(*) as total FROM morataya_usuario WHERE usu_correo = '{$correo}' AND usu_situacion = 1";
+            if($id > 0) {
+                $queryCorreo .= " AND usu_id != {$id}";
+            }
+            $correoExistente = Usuario::fetchFirst($queryCorreo);
+            if(($correoExistente['total'] ?? 0) > 0) {
+                $errores[] = 'El correo electrónico ya está registrado';
+            }
         }
         
         $fotografia = '';
@@ -91,29 +165,58 @@ class UsuarioController {
         
         if(empty($errores)) {
             try {
-                $usuario = new Usuario([
-                    'usu_nombre' => $nombre,
-                    'usu_codigo' => $codigo,
-                    'usu_password' => password_hash($password, PASSWORD_DEFAULT),
-                    'usu_correo' => $correo,
-                    'usu_fotografia' => $fotografia
-                ]);
+                if($id > 0) {
+                    $campos = [
+                        "usu_nombre = '{$nombre}'",
+                        "usu_codigo = {$codigo}",
+                        "usu_correo = '{$correo}'"
+                    ];
+                    
+                    if($password) {
+                        $campos[] = "usu_password = '" . password_hash($password, PASSWORD_DEFAULT) . "'";
+                    }
+                    
+                    if($fotografia) {
+                        $campos[] = "usu_fotografia = '{$fotografia}'";
+                    }
+                    
+                    $sqlUpdate = "UPDATE morataya_usuario SET " . implode(', ', $campos) . " WHERE usu_id = {$id}";
+                    $resultado = Usuario::SQL($sqlUpdate);
+                    $exito = true;
+                    $usuario_id = $id;
+                } else {
+                    $usuario = new Usuario([
+                        'usu_nombre' => $nombre,
+                        'usu_codigo' => $codigo,
+                        'usu_password' => password_hash($password, PASSWORD_DEFAULT),
+                        'usu_correo' => $correo,
+                        'usu_fotografia' => $fotografia
+                    ]);
+                    
+                    $resultado = $usuario->guardar();
+                    $exito = $resultado['resultado'] ?? false;
+                    $usuario_id = $resultado['id'] ?? 0;
+                }
                 
-                $resultado = $usuario->guardar();
-                
-                if($resultado) {
+                if($exito && $usuario_id) {
+                    if($id > 0) {
+                        $sqlDeleteRoles = "UPDATE morataya_permiso SET permiso_situacion = 0 WHERE permiso_usuario = {$usuario_id}";
+                        Usuario::SQL($sqlDeleteRoles);
+                    }
+                    
                     foreach($roles_seleccionados as $rol_id) {
                         $permiso = new Permiso([
-                            'permiso_usuario' => $usuario->usu_id,
+                            'permiso_usuario' => $usuario_id,
                             'permiso_rol' => $rol_id
                         ]);
                         $permiso->guardar();
                     }
                     
+                    $accion = $id > 0 ? 'Actualización' : 'Creación';
                     $auditoria = new Auditoria([
                         'usu_id' => $_SESSION['usuario_id'],
                         'aud_modulo' => 'Usuarios',
-                        'aud_accion' => 'Creación de usuario: ' . $nombre,
+                        'aud_accion' => $accion . ' de usuario: ' . $nombre,
                         'aud_ip' => $_SERVER['REMOTE_ADDR'],
                         'aud_navegador' => substr($_SERVER['HTTP_USER_AGENT'], 0, 100)
                     ]);
@@ -121,7 +224,7 @@ class UsuarioController {
                     
                     echo json_encode([
                         'resultado' => true,
-                        'mensaje' => 'Usuario creado correctamente'
+                        'mensaje' => 'Usuario ' . ($id > 0 ? 'actualizado' : 'creado') . ' correctamente'
                     ]);
                     return;
                 }
@@ -153,32 +256,41 @@ class UsuarioController {
             return;
         }
         
+        if($id == $_SESSION['usuario_id']) {
+            echo json_encode(['resultado' => false, 'mensaje' => 'No puedes eliminar tu propio usuario']);
+            return;
+        }
+        
         try {
-            $usuario = Usuario::find($id);
+            $query = "SELECT * FROM morataya_usuario WHERE usu_id = {$id} AND usu_situacion = 1";
+            $usuario = Usuario::fetchFirst($query);
             
             if(!$usuario) {
                 echo json_encode(['resultado' => false, 'mensaje' => 'Usuario no encontrado']);
                 return;
             }
             
-            $nombre = $usuario->usu_nombre;
-            $resultado = $usuario->eliminar();
+            $nombre = $usuario['usu_nombre'];
             
-            if($resultado) {
-                $auditoria = new Auditoria([
-                    'usu_id' => $_SESSION['usuario_id'],
-                    'aud_modulo' => 'Usuarios',
-                    'aud_accion' => 'Eliminación de usuario: ' . $nombre,
-                    'aud_ip' => $_SERVER['REMOTE_ADDR'],
-                    'aud_navegador' => substr($_SERVER['HTTP_USER_AGENT'], 0, 100)
-                ]);
-                $auditoria->guardar();
-                
-                echo json_encode([
-                    'resultado' => true,
-                    'mensaje' => 'Usuario eliminado correctamente'
-                ]);
-            }
+            $sqlUpdateUsuario = "UPDATE morataya_usuario SET usu_situacion = 0 WHERE usu_id = {$id}";
+            $sqlUpdatePermisos = "UPDATE morataya_permiso SET permiso_situacion = 0 WHERE permiso_usuario = {$id}";
+            
+            Usuario::SQL($sqlUpdateUsuario);
+            Usuario::SQL($sqlUpdatePermisos);
+            
+            $auditoria = new Auditoria([
+                'usu_id' => $_SESSION['usuario_id'],
+                'aud_modulo' => 'Usuarios',
+                'aud_accion' => 'Eliminación de usuario: ' . $nombre,
+                'aud_ip' => $_SERVER['REMOTE_ADDR'],
+                'aud_navegador' => substr($_SERVER['HTTP_USER_AGENT'], 0, 100)
+            ]);
+            $auditoria->guardar();
+            
+            echo json_encode([
+                'resultado' => true,
+                'mensaje' => 'Usuario eliminado correctamente'
+            ]);
         } catch (Exception $e) {
             echo json_encode([
                 'resultado' => false,

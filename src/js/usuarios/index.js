@@ -1,24 +1,17 @@
 import Swal from "sweetalert2";
 
 let tablaUsuarios;
-let modoCrear = false;
+let modoEdicion = false;
 
 document.addEventListener('DOMContentLoaded', function() {
-    const urlPath = window.location.pathname;
-    
-    if(urlPath.includes('/crear')) {
-        modoCrear = true;
-        cargarRoles();
-        configurarFormularioCrear();
-    } else {
-        cargarUsuarios();
-    }
+    cargarUsuarios();
+    cargarRoles();
+    configurarFormulario();
 });
 
-// FUNCIONES PARA LISTADO
 async function cargarUsuarios() {
     try {
-        const respuesta = await fetch('/usuarios/obtenerAPI');
+        const respuesta = await fetch('/morataya_final_dotacion_ingsoft1/usuarios/obtenerAPI');
         const usuarios = await respuesta.json();
         
         if(tablaUsuarios) {
@@ -28,6 +21,7 @@ async function cargarUsuarios() {
         mostrarUsuarios(usuarios);
         inicializarDataTable();
     } catch (error) {
+        console.error('Error al cargar usuarios:', error);
         Swal.fire('Error', 'No se pudieron cargar los usuarios', 'error');
     }
 }
@@ -41,20 +35,21 @@ function mostrarUsuarios(usuarios) {
         tr.innerHTML = `
             <td>
                 ${usuario.usu_fotografia ? 
-                    `<img src="/storage/fotosUsuarios/${usuario.usu_fotografia}" class="rounded-circle" width="40" height="40" alt="Foto">` :
+                    `<img src="/morataya_final_dotacion_ingsoft1/storage/fotosUsuarios/${usuario.usu_fotografia}" class="rounded-circle" width="40" height="40" alt="Foto">` :
                     `<i class="bi bi-person-circle fs-2 text-muted"></i>`
                 }
             </td>
             <td>${usuario.usu_nombre}</td>
             <td>${usuario.usu_codigo}</td>
             <td>${usuario.usu_correo || '-'}</td>
+            <td><small class="text-muted">${usuario.roles_nombres || 'Sin roles'}</small></td>
             <td>
                 <span class="badge bg-${usuario.usu_situacion == 1 ? 'success' : 'danger'}">
                     ${usuario.usu_situacion == 1 ? 'Activo' : 'Inactivo'}
                 </span>
             </td>
             <td>
-                <button class="btn btn-sm btn-outline-primary" onclick="editarUsuario(${usuario.usu_id})">
+                <button class="btn btn-sm btn-outline-primary me-1" onclick="editarUsuario(${usuario.usu_id})">
                     <i class="bi bi-pencil"></i>
                 </button>
                 <button class="btn btn-sm btn-outline-danger" onclick="eliminarUsuario(${usuario.usu_id})">
@@ -66,59 +61,9 @@ function mostrarUsuarios(usuarios) {
     });
 }
 
-function inicializarDataTable() {
-    tablaUsuarios = $('#TablaUsuarios').DataTable({
-        language: {
-            url: 'https://cdn.datatables.net/plug-ins/1.13.4/i18n/es-ES.json'
-        },
-        responsive: true,
-        pageLength: 25
-    });
-}
-
-window.editarUsuario = function(id) {
-    window.location.href = `/usuarios/editar?id=${id}`;
-};
-
-window.eliminarUsuario = async function(id) {
-    try {
-        const confirmacion = await Swal.fire({
-            title: '¿Estás seguro?',
-            text: "Esta acción no se puede deshacer",
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonText: 'Sí, eliminar',
-            cancelButtonText: 'Cancelar'
-        });
-        
-        if(!confirmacion.isConfirmed) return;
-        
-        Swal.fire({
-            title: 'Eliminando...',
-            allowOutsideClick: false,
-            didOpen: () => {
-                Swal.showLoading();
-            }
-        });
-
-        const respuesta = await fetch(`/usuarios/eliminarAPI?usu_id=${id}`);
-        const resultado = await respuesta.json();
-        
-        if(resultado.resultado) {
-            Swal.fire('Eliminado', resultado.mensaje, 'success');
-            cargarUsuarios();
-        } else {
-            Swal.fire('Error', resultado.mensaje, 'error');
-        }
-    } catch (error) {
-        Swal.fire('Error', 'No se pudo eliminar el usuario', 'error');
-    }
-};
-
-// FUNCIONES PARA CREAR
 async function cargarRoles() {
     try {
-        const respuesta = await fetch('/roles/obtenerAPI');
+        const respuesta = await fetch('/morataya_final_dotacion_ingsoft1/roles/obtenerAPI');
         const roles = await respuesta.json();
         
         const container = document.getElementById('RolesContainer');
@@ -139,11 +84,11 @@ async function cargarRoles() {
             container.appendChild(div);
         });
     } catch (error) {
-        Swal.fire('Error', 'No se pudieron cargar los roles', 'error');
+        console.error('Error al cargar roles:', error);
     }
 }
 
-function configurarFormularioCrear() {
+function configurarFormulario() {
     const formulario = document.getElementById('FormUsuario');
     
     if(formulario) {
@@ -152,11 +97,52 @@ function configurarFormularioCrear() {
             guardarUsuario();
         });
     }
+    
+    const inputFoto = document.getElementById('usu_fotografia');
+    if(inputFoto) {
+        inputFoto.addEventListener('change', function(e) {
+            previewFotografia(e.target.files[0]);
+        });
+    }
+    
+    const modal = document.getElementById('ModalUsuario');
+    if(modal) {
+        modal.addEventListener('hidden.bs.modal', function() {
+            limpiarFormulario();
+        });
+    }
+}
+
+function limpiarFormulario() {
+    document.getElementById('FormUsuario').reset();
+    document.getElementById('usu_id').value = '';
+    document.getElementById('tituloModal').textContent = 'Nuevo Usuario';
+    document.getElementById('passwordRequired').style.display = 'inline';
+    document.getElementById('usu_password').required = true;
+    document.getElementById('passwordHelp').textContent = 'Mínimo 6 caracteres';
+    document.getElementById('previewFoto').innerHTML = '';
+    
+    const checkboxes = document.querySelectorAll('input[name="roles[]"]');
+    checkboxes.forEach(cb => cb.checked = false);
+    
+    modoEdicion = false;
+}
+
+function previewFotografia(file) {
+    const preview = document.getElementById('previewFoto');
+    
+    if(file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            preview.innerHTML = `<img src="${e.target.result}" class="img-thumbnail" style="max-width: 100px; max-height: 100px;">`;
+        };
+        reader.readAsDataURL(file);
+    } else {
+        preview.innerHTML = '';
+    }
 }
 
 async function guardarUsuario() {
-    if(!validarFormulario()) return;
-    
     try {
         Swal.fire({
             title: 'Guardando...',
@@ -168,7 +154,7 @@ async function guardarUsuario() {
         
         const datos = new FormData(document.getElementById('FormUsuario'));
         
-        const respuesta = await fetch('/usuarios/guardarAPI', {
+        const respuesta = await fetch('/morataya_final_dotacion_ingsoft1/usuarios/guardarAPI', {
             method: 'POST',
             body: datos
         });
@@ -176,36 +162,106 @@ async function guardarUsuario() {
         const resultado = await respuesta.json();
         
         if(resultado.resultado) {
-            Swal.fire('Éxito', resultado.mensaje, 'success').then(() => {
-                window.location.href = '/usuarios';
-            });
+            Swal.fire('Éxito', resultado.mensaje, 'success');
+            bootstrap.Modal.getInstance(document.getElementById('ModalUsuario')).hide();
+            cargarUsuarios();
         } else {
-            Swal.fire('Error', resultado.mensaje, 'error');
+            if(resultado.errores && Array.isArray(resultado.errores)) {
+                Swal.fire('Error', resultado.errores.join('\n'), 'error');
+            } else {
+                Swal.fire('Error', resultado.mensaje, 'error');
+            }
         }
     } catch (error) {
+        console.error('Error:', error);
         Swal.fire('Error', 'Error al guardar usuario', 'error');
     }
 }
 
-function validarFormulario() {
-    const nombre = document.querySelector('input[name="usu_nombre"]').value.trim();
-    const codigo = document.querySelector('input[name="usu_codigo"]').value;
-    const password = document.querySelector('input[name="usu_password"]').value;
-    
-    if(!nombre) {
-        Swal.fire('Error', 'El nombre es obligatorio', 'error');
-        return false;
+function inicializarDataTable() {
+    if ($.fn.DataTable.isDataTable('#TablaUsuarios')) {
+        $('#TablaUsuarios').DataTable().destroy();
     }
     
-    if(!codigo || codigo < 1000 || codigo > 999999) {
-        Swal.fire('Error', 'El código debe ser entre 1000 y 999999', 'error');
-        return false;
+    tablaUsuarios = $('#TablaUsuarios').DataTable({
+        language: {
+            url: '//cdn.datatables.net/plug-ins/1.13.7/i18n/es-ES.json'
+        },
+        responsive: true,
+        pageLength: 10,
+        order: [[1, 'asc']]
+    });
+}
+
+window.editarUsuario = async function(id) {
+    try {
+        const respuesta = await fetch(`/morataya_final_dotacion_ingsoft1/usuarios/obtenerPorIdAPI?id=${id}`);
+        const data = await respuesta.json();
+        
+        if(data.resultado && data.usuario) {
+            const usuario = data.usuario;
+            
+            document.getElementById('usu_id').value = usuario.usu_id;
+            document.getElementById('usu_nombre').value = usuario.usu_nombre;
+            document.getElementById('usu_codigo').value = usuario.usu_codigo;
+            document.getElementById('usu_correo').value = usuario.usu_correo || '';
+            document.getElementById('usu_password').value = '';
+            document.getElementById('tituloModal').textContent = 'Editar Usuario';
+            document.getElementById('passwordRequired').style.display = 'none';
+            document.getElementById('usu_password').required = false;
+            document.getElementById('passwordHelp').textContent = 'Dejar vacío para mantener la contraseña actual';
+            
+            if(data.roles && Array.isArray(data.roles)) {
+                data.roles.forEach(rolId => {
+                    const checkbox = document.getElementById(`rol_${rolId}`);
+                    if(checkbox) checkbox.checked = true;
+                });
+            }
+            
+            if(usuario.usu_fotografia) {
+                document.getElementById('previewFoto').innerHTML = 
+                    `<img src="/morataya_final_dotacion_ingsoft1/storage/fotosUsuarios/${usuario.usu_fotografia}" class="img-thumbnail" style="max-width: 100px; max-height: 100px;">`;
+            }
+            
+            modoEdicion = true;
+            
+            const modal = new bootstrap.Modal(document.getElementById('ModalUsuario'));
+            modal.show();
+        } else {
+            Swal.fire('Error', data.mensaje || 'Usuario no encontrado', 'error');
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        Swal.fire('Error', 'Error al cargar usuario', 'error');
     }
-    
-    if(!password || password.length < 6) {
-        Swal.fire('Error', 'La contraseña debe tener al menos 6 caracteres', 'error');
-        return false;
+}
+
+window.eliminarUsuario = async function(id) {
+    try {
+        const resultado = await Swal.fire({
+            title: '¿Estás seguro?',
+            text: 'Esta acción no se puede deshacer',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Sí, eliminar',
+            cancelButtonText: 'Cancelar'
+        });
+        
+        if(resultado.isConfirmed) {
+            const respuesta = await fetch(`/morataya_final_dotacion_ingsoft1/usuarios/eliminarAPI?id=${id}`);
+            const data = await respuesta.json();
+            
+            if(data.resultado) {
+                Swal.fire('Eliminado', data.mensaje, 'success');
+                cargarUsuarios();
+            } else {
+                Swal.fire('Error', data.mensaje, 'error');
+            }
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        Swal.fire('Error', 'Error al eliminar usuario', 'error');
     }
-    
-    return true;
 }
