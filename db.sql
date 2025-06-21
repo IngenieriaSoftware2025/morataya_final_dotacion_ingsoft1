@@ -107,6 +107,7 @@ CREATE TABLE morataya_solicitudes_dotacion (
     personal_id INT NOT NULL,
     tipo_id INT NOT NULL,
     talla_id INT NOT NULL,
+    cantidad INT NOT NULL DEFAULT 1,
     fecha_solicitud DATE DEFAULT TODAY,
     estado_entrega SMALLINT DEFAULT 0,
     solicitud_situacion SMALLINT DEFAULT 1,
@@ -204,8 +205,7 @@ INSERT INTO morataya_solicitudes_dotacion (personal_id, tipo_id, talla_id, fecha
 INSERT INTO morataya_solicitudes_dotacion (personal_id, tipo_id, talla_id, fecha_solicitud, estado_entrega, solicitud_situacion) VALUES 
 (5, 5, 4, TODAY, 0, 1);
 
--- Insertar usuarios del sistema
--- Nota: Las contraseñas están hasheadas con password_hash() de PHP
+-- Nota: Las contraseñas están hasheadas
 INSERT INTO morataya_usuario (usu_nombre, usu_codigo, usu_password, usu_correo, usu_situacion) VALUES 
 ('Carlos Rodriguez', 100001, '123456', 'carlos@mindef.gob.gt', 1);
 INSERT INTO morataya_usuario (usu_nombre, usu_codigo, usu_password, usu_correo, usu_situacion) VALUES 

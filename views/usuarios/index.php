@@ -30,12 +30,14 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="tituloModal">Nuevo Usuario</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#ModalUsuario" onclick="nuevoUsuario()">
+                    <i class="bi bi-plus-circle me-2"></i>Nuevo Usuario
+                </button>
             </div>
             <div class="modal-body">
                 <form method="POST" enctype="multipart/form-data" id="FormUsuario">
                     <input type="hidden" name="usu_id" id="usu_id">
-                    
+
                     <div class="row">
                         <div class="col-md-6">
                             <div class="mb-3">
@@ -43,7 +45,7 @@
                                 <input type="text" name="usu_nombre" id="usu_nombre" class="form-control" required maxlength="100">
                             </div>
                         </div>
-                        
+
                         <div class="col-md-6">
                             <div class="mb-3">
                                 <label class="form-label">Código de Usuario <span class="text-danger">*</span></label>
@@ -51,7 +53,7 @@
                             </div>
                         </div>
                     </div>
-                    
+
                     <div class="row">
                         <div class="col-md-6">
                             <div class="mb-3">
@@ -59,7 +61,7 @@
                                 <input type="email" name="usu_correo" id="usu_correo" class="form-control" maxlength="100">
                             </div>
                         </div>
-                        
+
                         <div class="col-md-6">
                             <div class="mb-3">
                                 <label class="form-label">Contraseña <span class="text-danger" id="passwordRequired">*</span></label>
@@ -68,7 +70,7 @@
                             </div>
                         </div>
                     </div>
-                    
+
                     <div class="row">
                         <div class="col-md-6">
                             <div class="mb-3">
@@ -78,7 +80,7 @@
                                 <div id="previewFoto" class="mt-2"></div>
                             </div>
                         </div>
-                        
+
                         <div class="col-md-6">
                             <div class="mb-3">
                                 <label class="form-label">Roles</label>

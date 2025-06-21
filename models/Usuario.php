@@ -5,6 +5,7 @@ namespace Model;
 class Usuario extends ActiveRecord {
     
     public static $tabla = 'morataya_usuario';
+    
     public static $columnasDB = [
         'usu_id',
         'usu_nombre',

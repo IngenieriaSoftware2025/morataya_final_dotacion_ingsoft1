@@ -8,7 +8,6 @@ module.exports = {
     'js/inicio': './src/js/inicio.js',
     'js/auth/index': './src/js/auth/index.js',
     'js/usuarios/index': './src/js/usuarios/index.js',
-    'js/usuarios/index': './src/js/usuarios/index.js',
     'js/personal/index': './src/js/personal/index.js',
     'js/entregas/index': './src/js/entregas/index.js',
     'js/inventario/index': './src/js/inventario/index.js',
@@ -17,7 +16,6 @@ module.exports = {
     'js/tallas/index': './src/js/tallas/index.js',
     'js/tipos/index': './src/js/tipos/index.js',
     'js/roles/index': './src/js/roles/index.js',
-    'js/auditoria/index': './src/js/auditoria/index.js'
   },
   output: {
     filename: '[name].js',

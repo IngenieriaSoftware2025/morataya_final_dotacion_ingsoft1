@@ -10,6 +10,7 @@ class SolicitudDotacion extends ActiveRecord {
         'personal_id',
         'tipo_id',
         'talla_id',
+        'cantidad',
         'fecha_solicitud',
         'estado_entrega',
         'solicitud_situacion'
@@ -21,6 +22,7 @@ class SolicitudDotacion extends ActiveRecord {
     public $personal_id;
     public $tipo_id;
     public $talla_id;
+    public $cantidad;
     public $fecha_solicitud;
     public $estado_entrega;
     public $solicitud_situacion;
@@ -30,33 +32,9 @@ class SolicitudDotacion extends ActiveRecord {
         $this->personal_id = $args['personal_id'] ?? null;
         $this->tipo_id = $args['tipo_id'] ?? null;
         $this->talla_id = $args['talla_id'] ?? null;
+        $this->cantidad = $args['cantidad'] ?? 1;
         $this->fecha_solicitud = $args['fecha_solicitud'] ?? date('Y-m-d');
         $this->estado_entrega = $args['estado_entrega'] ?? 0;
         $this->solicitud_situacion = $args['solicitud_situacion'] ?? 1;
-    }
-    
-    public static function obtenerConDetalles() {
-        $query = "
-            SELECT 
-                s.solicitud_id,
-                s.personal_id,
-                s.tipo_id,
-                s.talla_id,
-                s.fecha_solicitud,
-                s.estado_entrega,
-                s.solicitud_situacion,
-                p.personal_nombre,
-                p.personal_cui,
-                td.tipo_nombre,
-                t.talla_etiqueta
-            FROM morataya_solicitudes_dotacion s
-            INNER JOIN morataya_personal p ON s.personal_id = p.personal_id
-            INNER JOIN morataya_tipos_dotacion td ON s.tipo_id = td.tipo_id
-            INNER JOIN morataya_tallas t ON s.talla_id = t.talla_id
-            WHERE s.solicitud_situacion = 1
-            ORDER BY s.fecha_solicitud DESC
-        ";
-        
-        return self::fetchArray($query);
     }
 }

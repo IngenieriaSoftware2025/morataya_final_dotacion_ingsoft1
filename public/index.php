@@ -1,4 +1,4 @@
-<?php 
+<?php
 require_once __DIR__ . '/../includes/app.php';
 
 use MVC\Router;
@@ -39,7 +39,6 @@ $router->get('/usuarios', [UsuarioController::class, 'index']);
 $router->get('/usuarios/obtenerAPI', [UsuarioController::class, 'obtenerAPI']);
 $router->get('/usuarios/obtenerPorIdAPI', [UsuarioController::class, 'obtenerPorIdAPI']);
 $router->post('/usuarios/guardarAPI', [UsuarioController::class, 'guardarAPI']);
-$router->post('/usuarios/actualizarAPI', [UsuarioController::class, 'actualizarAPI']);
 $router->get('/usuarios/eliminarAPI', [UsuarioController::class, 'eliminarAPI']);
 
 // Personal
@@ -48,6 +47,11 @@ $router->get('/personal', [PersonalController::class, 'index']);
 // APIs de Personal
 $router->get('/personal/obtenerAPI', [PersonalController::class, 'obtenerAPI']);
 $router->post('/personal/guardarAPI', [PersonalController::class, 'guardarAPI']);
+$router->get('/personal/eliminarAPI', [PersonalController::class, 'eliminarAPI']);
+$router->get('/personal/obtenerPorIdAPI', [PersonalController::class, 'obtenerPorIdAPI']);
+$router->get('/personal/buscarAPI', [PersonalController::class, 'buscarAPI']);
+$router->get('/personal/activarAPI', [PersonalController::class, 'activarAPI']);
+
 $router->get('/personal/eliminarAPI', [PersonalController::class, 'eliminarAPI']);
 
 // Roles
@@ -58,17 +62,23 @@ $router->get('/roles/obtenerAPI', [RolController::class, 'obtenerAPI']);
 $router->post('/roles/guardarAPI', [RolController::class, 'guardarAPI']);
 
 // Inventario
+$router->get('/inventario', [DotacionController::class, 'inventario']);
 $router->get('/dotacion/inventario', [DotacionController::class, 'inventario']);
 $router->get('/dotacion/obtenerInventarioAPI', [DotacionController::class, 'obtenerInventarioAPI']);
 $router->post('/dotacion/guardarInventarioAPI', [DotacionController::class, 'guardarInventarioAPI']);
+$router->post('/dotacion/actualizarInventarioAPI', [DotacionController::class, 'actualizarInventarioAPI']);
+$router->post('/dotacion/actualizarSolicitudAPI', [DotacionController::class, 'actualizarSolicitudAPI']);
+$router->post('/dotacion/eliminarSolicitudAPI', [DotacionController::class, 'eliminarSolicitudAPI']);
 
 // Solicitudes
+$router->get('/solicitudes', [DotacionController::class, 'solicitudes']);
 $router->get('/dotacion/solicitudes', [DotacionController::class, 'solicitudes']);
 $router->get('/dotacion/obtenerSolicitudesAPI', [DotacionController::class, 'obtenerSolicitudesAPI']);
 $router->get('/dotacion/obtenerSolicitudesPendientesAPI', [DotacionController::class, 'obtenerSolicitudesPendientesAPI']);
 $router->post('/dotacion/guardarSolicitudAPI', [DotacionController::class, 'guardarSolicitudAPI']);
 
 // Entregas
+$router->get('/entregas', [DotacionController::class, 'entregas']);
 $router->get('/dotacion/entregas', [DotacionController::class, 'entregas']);
 $router->get('/dotacion/obtenerEntregasAPI', [DotacionController::class, 'obtenerEntregasAPI']);
 $router->post('/dotacion/procesarEntregaAPI', [DotacionController::class, 'procesarEntregaAPI']);
@@ -84,6 +94,8 @@ $router->get('/tallas', [TallaController::class, 'index']);
 $router->get('/tallas/obtenerAPI', [TallaController::class, 'obtenerAPI']);
 $router->post('/tallas/guardarAPI', [TallaController::class, 'guardarAPI']);
 $router->get('/tallas/eliminarAPI', [TallaController::class, 'eliminarAPI']);
+$router->get('/tallas/obtenerPorTipoAPI', [TallaController::class, 'obtenerPorTipoAPI']);
+$router->get('/tallas/obtenerDisponiblesAPI', [DotacionController::class, 'obtenerTallasDisponiblesAPI']);
 
 // Reportes
 $router->get('/reportes/estadisticas', [ReportesController::class, 'estadisticas']);
@@ -98,11 +110,12 @@ $router->get('/reportes/entregasPorMesAPI', [ReportesController::class, 'entrega
 $router->get('/reportes/entregasPorTallaAPI', [ReportesController::class, 'entregasPorTallaAPI']);
 
 // Auditoría
-$router->get('/auditoria', [AuditoriaController::class, 'renderizarPagina']);
+$router->get('/auditoria', [AuditoriaController::class, 'index']);
+$router->get('/auditoria/obtenerAPI', [AuditoriaController::class, 'obtenerAPI']);
 $router->get('/auditoria/buscarAPI', [AuditoriaController::class, 'buscarAPI']);
-$router->get('/auditoria/buscarUsuariosAPI', [AuditoriaController::class, 'buscarUsuariosAPI']);
+$router->get('/auditoria/obtenerUsuariosAPI', [AuditoriaController::class, 'obtenerUsuariosAPI']);
+$router->get('/auditoria/obtenerModulosAPI', [AuditoriaController::class, 'obtenerModulosAPI']);
 $router->get('/auditoria/estadisticasAPI', [AuditoriaController::class, 'estadisticasAPI']);
-
 // Perfil
 $router->get('/perfil', [UsuarioController::class, 'perfil']);
 $router->post('/perfil/actualizarAPI', [UsuarioController::class, 'actualizarPerfilAPI']);

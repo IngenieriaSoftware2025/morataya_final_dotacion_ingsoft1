@@ -17,14 +17,12 @@
                     <th>Acciones</th>
                 </tr>
             </thead>
-            <tbody>
-                <!-- Se carga dinámicamente -->
-            </tbody>
+            <tbody></tbody>
         </table>
     </div>
 </div>
 
-<!-- Modal Agregar Inventario -->
+<!-- Modal Agregar -->
 <div class="modal fade" id="ModalInventario" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -48,7 +46,7 @@
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Cantidad</label>
-                        <input type="number" name="cantidad" class="form-control" min="1" required>
+                        <input type="number" name="cantidad" class="form-control" min="1" max="9999" required>
                     </div>
                 </form>
             </div>
@@ -60,4 +58,38 @@
     </div>
 </div>
 
-<script src="<?= asset('build/js/dotacion/inventario.js'); ?>"></script>
+<!-- Modal Editar -->
+<div class="modal fade" id="ModalEditarInventario" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Editar Inventario</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="FormEditarInventario">
+                    <input type="hidden" name="inv_id" id="edit_inv_id">
+                    <div class="mb-3">
+                        <label class="form-label">Tipo de Dotación</label>
+                        <input type="text" id="edit_tipo_nombre" class="form-control" readonly>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Talla</label>
+                        <input type="text" id="edit_talla_etiqueta" class="form-control" readonly>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Cantidad Actual</label>
+                        <input type="number" name="cantidad" id="edit_cantidad" class="form-control" min="0" max="9999" required>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="submit" form="FormEditarInventario" class="btn btn-primary">Actualizar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="<?= asset('build/js/inventario/index.js'); ?>"></script>
